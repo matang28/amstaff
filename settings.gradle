@@ -1,0 +1,5 @@
+rootProject.name = 'amstaff'
+include 'server'
+include 'core'
+include 'cluster'
+
