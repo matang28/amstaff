@@ -9,11 +9,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 interface Scheduler {
-    fun schedule(scheduleSample: ScheduledSample)
+    fun schedule(scheduleSampling: ScheduledSampling)
     fun terminate()
 }
 
-class AmstaffScheduler(threads: Int = 1) : Scheduler {
+class NaiveScheduler(threads: Int = 1) : Scheduler {
 
     private val executor: ScheduledThreadPoolExecutor =
         ScheduledThreadPoolExecutor(threads)
@@ -22,10 +22,10 @@ class AmstaffScheduler(threads: Int = 1) : Scheduler {
         executor.removeOnCancelPolicy = true
     }
 
-    override fun schedule(scheduleSample: ScheduledSample) {
+    override fun schedule(scheduleSampling: ScheduledSampling) {
         executor.schedule(
-            newRunnable(scheduleSample),
-            nextDelay(scheduleSample.timing)!!,
+            newRunnable(scheduleSampling),
+            nextDelay(scheduleSampling.timing)!!,
             TimeUnit.SECONDS
         )
     }
@@ -34,16 +34,16 @@ class AmstaffScheduler(threads: Int = 1) : Scheduler {
         executor.shutdownNow()
     }
 
-    private fun newRunnable(scheduleSample: ScheduledSample): Runnable {
+    private fun newRunnable(scheduleSampling: ScheduledSampling): Runnable {
         return dispatch {
-            val result = scheduleSample.sample.probe()
+            val result = scheduleSampling.sampler.probe()
 
-            scheduleSample.handlers
+            scheduleSampling.handlers
                 .forEach { handler -> handler(SampleOk, result) }
 
-            val reschedule = nextDelay(scheduleSample.timing)
-            if (reschedule != null) {
-                executor.schedule(newRunnable(scheduleSample), reschedule, TimeUnit.SECONDS)
+            val reschedule = nextDelay(scheduleSampling.timing)
+            if (reschedule != null && reschedule > 0) {
+                executor.schedule(newRunnable(scheduleSampling), reschedule, TimeUnit.SECONDS)
             }
         }
     }

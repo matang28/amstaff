@@ -9,7 +9,7 @@ object SampleCritical : SampleStatus()
 
 typealias SampleResult = Pair<String, SampleStatus>
 
-interface Sample {
+interface Sampler {
     val name: String
     val tags: Set<String>
     suspend fun probe(): SampleResult
@@ -19,6 +19,6 @@ interface OnSampleChanged {
     suspend operator fun invoke(from: SampleStatus, to: SampleResult): SampleStatus
 }
 
-data class ScheduledSample(val sample: Sample,
-                           val timing: Schedule,
-                           val handlers: Sequence<OnSampleChanged>)
+data class ScheduledSampling(val sampler: Sampler,
+                             val timing: Schedule,
+                             val handlers: Sequence<OnSampleChanged>)
