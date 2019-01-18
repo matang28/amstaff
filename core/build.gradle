@@ -22,6 +22,9 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.0'
 
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+
     compile "com.github.shyiko.skedule:skedule:0.4.0"
 
     testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
