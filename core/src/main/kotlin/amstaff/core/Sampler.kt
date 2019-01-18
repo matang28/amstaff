@@ -15,8 +15,9 @@ interface Sampler {
     suspend fun probe(): SampleResult
 }
 
+@FunctionalInterface
 interface OnSampleChanged {
-    suspend operator fun invoke(from: SampleStatus, to: SampleResult): SampleStatus
+    suspend operator fun invoke(sampler: Sampler, result: SampleResult): SampleStatus
 }
 
 data class ScheduledSampling(val sampler: Sampler,
