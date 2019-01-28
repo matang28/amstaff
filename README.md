@@ -1,4 +1,4 @@
-# Amstaff
+# Amstaff (WIP)
 
 ## Motivation
 As the adoption of CI/CD increases dramatically, software development relies on monitoring & alerting solutions more than ever before. 
@@ -102,7 +102,7 @@ amstaff("User Service") {
 
         handlers = sequenceOf(
             slack("API-KEY") {
-                message = "User service is down!!!"
+                message = "High CPU usage in user-service"
                 channel = "user-service-prod"
             }
         )
