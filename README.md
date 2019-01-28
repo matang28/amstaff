@@ -11,9 +11,6 @@ Amstaff is an open-source project which provides the following features:
 4) Zero dependencies.
 5) Dynamically push monitoring modules into the server.
 
-## Architecture
-
-
 ## Core Concepts
 Amstaff uses well defined and elegant concepts in order for anyone to easily extend it for its own purposes.
 
@@ -61,8 +58,12 @@ interface SampleHandler {
 You can put any kind of logic that works for you but Amstaff is shipped with the following handlers: EmailHandler, HttpHandler, OpsGenieHandler, SlackHandler which simply notify on any sample result change.
 
 
-## Example of usage
-Amstaff is built with Kotlin, and provides a simple to use DSL to create type-safe monitoring modules.
+## Monitoring Modules
+Amstaff uses Kotlin's type-safe builder in order to define its monitoring module.
+A monitoring module is simply a group of monitors that shares the same domain.
+
+I strongly believe that we should write our monitoring modules in code instead of providing config files, so Amstaff comes with its own DSL:
+
 ```kotlin
 // Define the module
 amstaff("User Service") {
@@ -114,3 +115,15 @@ Just save this file within your repository and push it to the server when deploy
 ```bash
 curl -x POST -d @user-service.kts amstaff.mydomain.com/monitor
 ```
+
+## Architecture
+### High Level
+
+### How it works?
+Amstaff uses the *Raft Consensus Algorithm* to maintain strong consistency between its members. On startup Amstaff will try distribute the different monitoring modules to its members by performing leader election on each one of the monitoring modules. This way when one node fails to cluster will auto-heal itself by performing leader election again, making sure that all of the monitoring modules are being scheduled.
+
+Every node in the cluster has its own scheduler, the schedulers are single threaded and shouldn't be blocked. Amstaff uses Kotlin's co-routines to run the actual samplers and handlers so you can use blocking operation when subclassing Sampler and SampleHandler.
+
+When sending a .kts file that describes the monitoring unit, Amstaff will compile that script to make sure there are no errors and evaluates it into a list of Scheduled Sampling ready to distributed across the cluster members.
+
+Amstaff dont try to reinvent the wheel and uses [Atomix's](http://atomix.io) novel implementation to Raft.
