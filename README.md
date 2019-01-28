@@ -15,15 +15,9 @@ Amstaff is an open-source project which provides the following features:
 Amstaff uses well defined and elegant concepts in order for anyone to easily extend it for its own purposes.
 
 #### The Sampler
-The sampler refers to the actual engine that we want to query. It could be an Http Sampler, Sql Sampler or any kind of metrics you would like to sample.
+The sampler refers to the actual engine that we want to query. It could be an Http Sampler, Sql Sampler or any kind of metric you would like to sample.
 ```kotlin
 interface Sampler {
-    // The unique name of the sample
-    val name: String
-    
-    // A set of tags associated with this sampler
-    val tags: Set<String>
-    
     // A suspendable function that will do the actual probing
     suspend fun probe(): SampleResult
 }
@@ -35,17 +29,19 @@ Amstaff is shipped with the GraphiteSampler, HttpSampler and SqlSampler.
 
 #### A Scheduled Sampling
 Having a sampler make no sense if we can't schedule it :)
-A scheduled sample defines the timing on which the sampler should run and which handlers do we need to notify.
+A *scheduled sample* defines the timing on which the sampler should run and which handlers do we need to notify.
 
 > For example: "I want to run an *http* health-check *every 1 minute* and send the results to a *slack* channel"
  
 ```kotlin
-data class ScheduledSampling(val sampler: Sampler,
+data class ScheduledSampling(val name: String,
+                             val tags: Set<String>,
+                             val sampler: Sampler,
                              val timing: Schedule,
                              val handlers: Sequence<SampleHandler>)
 ```
 
-Amstaff uses [skedule](https://github.com/shyiko/skedule) to define timing.
+Amstaff uses [skedule](https://github.com/shyiko/skedule) to define timing. 
 
 #### The Sample Handler
 The Sample Handler defines how you want to react when sample occurs:
@@ -58,7 +54,7 @@ interface SampleHandler {
 You can put any kind of logic that works for you but Amstaff is shipped with the following handlers: EmailHandler, HttpHandler, OpsGenieHandler, SlackHandler which simply notify on any sample result change.
 
 
-## Monitoring Modules
+### Monitoring Modules
 Amstaff uses Kotlin's type-safe builder in order to define its monitoring module.
 A monitoring module is simply a group of monitors that shares the same domain.
 
@@ -117,12 +113,12 @@ curl -x POST -d @user-service.kts amstaff.mydomain.com/monitor
 ```
 
 ## Architecture
-### High Level
+![](docs/overview.png)
 
 ### How it works?
-Amstaff uses the *Raft Consensus Algorithm* to maintain strong consistency between its members. On startup Amstaff will try distribute the different monitoring modules to its members by performing leader election on each one of the monitoring modules. This way when one node fails to cluster will auto-heal itself by performing leader election again, making sure that all of the monitoring modules are being scheduled.
+Amstaff uses the *Raft Consensus Algorithm* to maintain strong consistency between its members. On startup Amstaff will try distribute the different monitoring modules to its members by performing leader election on each one of the monitoring modules. This way when one node fails the cluster will auto-heal itself by performing leader election again, making sure that all of the monitoring modules are being scheduled.
 
-Every node in the cluster has its own scheduler, the schedulers are single threaded and shouldn't be blocked. Amstaff uses Kotlin's co-routines to run the actual samplers and handlers so you can use blocking operation when subclassing Sampler and SampleHandler.
+Every node in the cluster has its own scheduler, the schedulers are single threaded and shouldn't be blocked. Amstaff uses Kotlin's co-routines to run the actual samplers and handlers so you can use blocking operation when subclassing a Sampler and a SampleHandler.
 
 When sending a .kts file that describes the monitoring unit, Amstaff will compile that script to make sure there are no errors and evaluates it into a list of Scheduled Sampling ready to distributed across the cluster members.
 
