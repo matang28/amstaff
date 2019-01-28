@@ -106,8 +106,8 @@ class NaiveSchedulerTest {
         )
     }
 
-    private fun createHandler(sampler: LatchSampler, handlersLatch: CountDownLatch): OnSampleChanged {
-        return object : OnSampleChanged {
+    private fun createHandler(sampler: LatchSampler, handlersLatch: CountDownLatch): SampleHandler {
+        return object : SampleHandler {
             override suspend fun invoke(s: Sampler, result: SampleResult): SampleStatus {
                 assertEquals(sampler, s)
                 assertEquals(result.first, "")

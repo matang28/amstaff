@@ -30,7 +30,7 @@ interface TimingProvider {
     fun nextDelay(schedule: Schedule): Optional<Long>
 }
 
-internal object BestNextTimingProvider : TimingProvider {
+internal open class BestNextTimingProvider : TimingProvider {
 
     override fun nextDelay(schedule: Schedule): Optional<Long> {
         val now = ZonedDateTime.now()

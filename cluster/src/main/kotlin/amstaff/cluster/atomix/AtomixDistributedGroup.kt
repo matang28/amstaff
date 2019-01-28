@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 import java.util.function.BiConsumer
 import java.util.stream.Stream
 
-class AtomixDistributedGroup(private val atomix: Atomix) : DistributedGroup {
+class AtomixDistributedGroup(internal val atomix: Atomix) : DistributedGroup {
 
     private val clusterMessage = "cluster_message"
     private val directMessage = "direct_message"

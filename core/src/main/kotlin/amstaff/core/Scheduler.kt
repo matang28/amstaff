@@ -11,9 +11,9 @@ interface Scheduler {
     fun terminate()
 }
 
-class NaiveScheduler(
+open class NaiveScheduler(
     threads: Int = 1,
-    private val timingProvider: TimingProvider = BestNextTimingProvider
+    private val timingProvider: TimingProvider
 ) : Scheduler {
 
     private val executor: ScheduledThreadPoolExecutor =
